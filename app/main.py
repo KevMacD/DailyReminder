@@ -87,7 +87,7 @@ def error_logging(logging_on:bool,WorA:str,text:str):
         if hostname=="DESKTOP-D17IECP":
             prefix = "C:\\Users\\Kevin\\Dropbox\\Python Projects\\Daily Reminders\\logs\\"
         else:
-            prefix = "//home//kevin//DailyReminders//logs//"
+            prefix = "/home/kevin/DailyReminders/logs/"
         if WorA=="W":
             with open(prefix+"logfile.txt", "w") as f:
                 f.write(text+"\n")
