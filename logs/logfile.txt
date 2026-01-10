@@ -1,5 +1,6 @@
 Started App
 DESKTOP-D17IECP
+Calling Font Size
 226
 405
 463
@@ -24,5 +25,5 @@ DESKTOP-D17IECP
 1446
 1484
 1542
-Window Width:1536
 Font Size:58
+Window Width:1536
