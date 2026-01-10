@@ -20,7 +20,7 @@ class FullScreenWindow(QMainWindow):
         central_widget.setLayout(layout)
         
         # Add a label to show it's working
-        label = QLabel("This window is full screen. Press 'Esc' to exit.", self)
+        label = QLabel("Change here - This window is full screen. Press 'Esc' to exit.", self)
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(label)
         
