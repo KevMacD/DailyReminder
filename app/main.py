@@ -105,7 +105,7 @@ def main():
     app = QApplication(sys.argv)
     window = FullScreenWindow()
     window.hide()
-    window.resize(window.width(), window.height())
+    window.resize(1280, 800)
     screen_layout(window)
     error_logging(app_logging,"A","Calling Font Size")
     font_size = max_font_size(window,"Thursday, February 10th 2026 12:08:49 AM")
