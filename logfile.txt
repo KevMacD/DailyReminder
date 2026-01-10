@@ -1,0 +1,3 @@
+Started App
+Window Width:1536
+Font Size:58

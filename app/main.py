@@ -77,16 +77,25 @@ def max_font_size(window:FullScreenWindow,label_text:str)->int:
 
 def screen_layout(window:FullScreenWindow):
     window.setWindowTitle("Daily Reminder")
-    
     window.time_label = QLabel("Current time will appear here...", window)
 
+def error_logging(WorA:str,text:str):
+    if WorA=="W":
+        with open("logfile.txt", "w") as f:
+            f.write(text+"\n")
+    else:
+        with open("logfile.txt", "a") as f:
+            f.write(text+"\n")
 
 def main():
+    error_logging("W","Started App")
     app = QApplication(sys.argv)
     window = FullScreenWindow()
     window.hide()
     screen_layout(window)
     font_size = max_font_size(window,"Thursday, February 10th 2026 12:08:49 AM")
+    error_logging("A",f"Window Width:{window.width()}")
+    error_logging("A",f"Font Size:{font_size}")
     font = QFont("Arial", font_size)
     window.time_label.setFont(font)
 
