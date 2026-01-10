@@ -66,6 +66,7 @@ def max_font_size(window:FullScreenWindow,label_text:str)->int:
     max_font_size = 200
     window.time_label.setText(label_text)
     window.time_label.adjustSize()
+    error_logging(True,"A",f"Window Width:{window.width()}")
     error_logging(True,"A",window.time_label.width())
     while current_font_size < max_font_size:
         font = QFont("Arial", current_font_size) # You can also use other fonts like "Times New Roman"
@@ -104,8 +105,9 @@ def main():
     app = QApplication(sys.argv)
     window = FullScreenWindow()
     window.hide()
+    window.resize(window.width(), window.height())
     screen_layout(window)
-    error_logging(app_logging,"A",f"Calling Font Size")
+    error_logging(app_logging,"A","Calling Font Size")
     font_size = max_font_size(window,"Thursday, February 10th 2026 12:08:49 AM")
     error_logging(app_logging,"A",f"Font Size:{font_size}")
     error_logging(app_logging,"A",f"Window Width:{window.width()}")
