@@ -65,6 +65,8 @@ def max_font_size(window:FullScreenWindow,label_text:str)->int:
     current_font_size = 16
     max_font_size = 200
     window.time_label.setText(label_text)
+    window.time_label.adjustSize()
+    error_logging(True,"a",window.time_label.width())
     while current_font_size < max_font_size:
         font = QFont("Arial", current_font_size) # You can also use other fonts like "Times New Roman"
         window.time_label.setFont(font)
