@@ -1,0 +1,32 @@
+git pull
+Make Changes
+git add .
+git commit -m "message"
+git push origin main
+### ON RPI:
+
+cd to DailyReminders
+git reset
+git pull --no-ff
+source venv/bin/activate
+pyinstaller --onefile ./app/main.py
+## Result in the DIST folder, make sure its excutable
+
+
+
+### Install venv and PyQT6
+In project folder 
+python3 -m venv myenv
+source venv/bin/activate
+pip install PyQt6
+git config --global user.email "kevin@geekfrog.ca"
+git config --global user.name "kevin"
+
+
+### Auto Start
+nano /home/kevin/.config/autostart/DailyReminder.desktop
+[Desktop Entry]
+Name=Daily Reminder
+Exec=/home/kevin/DailyReminder/dist/main
+Type=application
+Terminal=false # Set to true if you want it to run in a terminal window
