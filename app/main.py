@@ -69,9 +69,9 @@ def max_font_size(window:FullScreenWindow,label_text:str)->int:
         font = QFont("Arial", current_font_size) # You can also use other fonts like "Times New Roman"
         window.time_label.setFont(font)
         window.time_label.adjustSize()
+        error_logging(True,"a",window.time_label.width())
         if window.time_label.width()>window.width():
             current_font_size -=2
-            #print(f"Current Font Size:{current_font_size} Label Width:{window.time_label.width()} ")
             return current_font_size
         current_font_size +=2
     return 16
@@ -86,14 +86,16 @@ def error_logging(logging_on:bool,WorA:str,text:str):
         prefix = ""
         if hostname=="DESKTOP-D17IECP":
             prefix = "C:\\Users\\Kevin\\Dropbox\\Python Projects\\Daily Reminders\\logs\\"
+        elif hostname=="Rpi10inch":
+            prefix = "/home/kevin/DailyReminder/logs/"
         else:
             prefix = "/home/kevin/DailyReminder/logs/"
         if WorA=="W":
             with open(prefix+"logfile.txt", "w") as f:
-                f.write(text+"\n")
+                f.write(str(text)+"\n")
         else: 
             with open(prefix+"logfile.txt", "a") as f:
-                f.write(text+"\n")
+                f.write(str(text)+"\n")
 
 def main():
     app_logging = True
