@@ -1,12 +1,9 @@
 import sys
-#import time
-#import threading
 import datetime
 
 from datetime import date, datetime
-from PIL import Image, ImageDraw, ImageFont
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
 from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QFont
@@ -20,12 +17,6 @@ class FullScreenWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Daily Reminder")
         self.showFullScreen()
-        
-        # Add a central widget and layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        layout = QVBoxLayout()
-        central_widget.setLayout(layout)
         
         #CallbackTimerfor TIME
         self.timer = QTimer(self)
@@ -85,6 +76,8 @@ def max_font_size(window:FullScreenWindow,label_text:str)->int:
     return 16
 
 def screen_layout(window:FullScreenWindow):
+    window.setWindowTitle("Daily Reminder")
+    
     window.time_label = QLabel("Current time will appear here...", window)
 
 
