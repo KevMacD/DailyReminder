@@ -1,125 +1,163 @@
 import sys
-import datetime
-import socket
-
-from datetime import date, datetime
-
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
-from PyQt6.QtCore import Qt
-from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
+from PyQt6.QtCore import Qt, QTimer, QDateTime
 from PyQt6.QtGui import QFont
+import random
 
+from weather import OpenWeatherMapResponse, get_weather
 
+Time_Font_Size = 48
+Weather_Font_Size = 36
+Message_Font_Size = 18
+Appointments_Font_Size = 18
+Holidays_Font_Size = 18
+TV_Font_Size = 18
+API_KEY = "dae6a4dddbdf38e9e44e492026e18c4b"
+lat = 49.2488
+lon = -122.9805
 
-
-
-class FullScreenWindow(QMainWindow):
+class KioskClock(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Daily Reminder")
+
+        self.setWindowTitle("Kiosk Clock")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.showFullScreen()
+
+        self.setStyleSheet("QWidget { background-color: #121212; } QLabel { color: #FFFFFF; }")
+
+        # Clock label
+        self.clock_label = QLabel("Loading Time...")
+        self.clock_label.setFont(QFont("Arial", Time_Font_Size, QFont.Weight.Bold))
+        self.clock_label.setStyleSheet("""
+            color: #77DD77;
+            font-weight: bold;
+        """)
+
+        # Weather label
+        self.weather_label = QLabel("Loading Weather...")
+        self.weather_label.setFont(QFont("Arial", Weather_Font_Size))
+        self.weather_label.setStyleSheet("""
+            color: #77DD77;
+            font-weight: bold;
+        """)
         
-        #CallbackTimerfor TIME
+        # Appointments label
+        self.appointments_title_label = QLabel("Appointments:")
+        self.appointments_title_label.setFont(QFont("Arial", Appointments_Font_Size))
+        self.appointments_title_label.setStyleSheet("""
+            color: #77DD77;
+            font-weight: bold;
+        """)
+        self.appointments_label = QLabel("Loading Appointments...")
+        self.appointments_label.setFont(QFont("Arial", Appointments_Font_Size))
+
+        # Holidays label
+        self.holidays_title_label = QLabel("Holidays:")
+        self.holidays_title_label.setFont(QFont("Arial", Holidays_Font_Size))
+        self.holidays_title_label.setStyleSheet("""
+            color: #77DD77;
+            font-weight: bold;
+        """)
+        self.holidays_label = QLabel("Loading Holidays...")
+        self.holidays_label.setFont(QFont("Arial", Holidays_Font_Size))
+
+        # TV label
+        self.tv_title_label = QLabel("What's on TV:")
+        self.tv_title_label.setFont(QFont("Arial", TV_Font_Size))
+        self.tv_title_label.setStyleSheet("""
+            color: #77DD77;
+            font-weight: bold;
+        """)
+        self.tv_label = QLabel("Loading TV...")
+        self.tv_label.setFont(QFont("Arial", TV_Font_Size))
+
+        # Message label
+        self.message_title_label = QLabel("Messages:")
+        self.message_title_label.setFont(QFont("Arial", Message_Font_Size))
+        self.message_title_label.setStyleSheet("""
+            color: #77DD77;
+            font-weight: bold;
+        """)
+        self.message_label = QLabel("Loading messages...")
+        self.message_label.setFont(QFont("Arial", Message_Font_Size))
+
+
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.setContentsMargins(50, 50, 50, 50)
+        layout.setSpacing(10)
+        layout.addWidget(self.clock_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.weather_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.appointments_title_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.appointments_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.holidays_title_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.holidays_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.tv_title_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.tv_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.message_title_label, alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.message_label, alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft)
+        self.setLayout(layout)
+
+        # Timers
         self.time_timer = QTimer(self)
-        # Connect the timer's timeout signal to the update_time slot
-        self.timer.timeout.connect(self.update_time)
-        # Set the interval in milliseconds (e.g., 1000ms = 1 second)
-        self.interval = 1000
-        self.time_timer.start(self.interval)
-        
-    def keyPressEvent(self, event):
-        """Handle key press events to allow exiting full screen with Escape."""
-        if event.key() == Qt.Key.Key_Escape:
-            self.close()
-            # Or use self.showNormal() to exit full screen mode without closing the window
+        self.time_timer.timeout.connect(self.update_time)
+        self.time_timer.start(1000)
+        self.update_time()
+
+        self.weather_timer = QTimer(self)
+        self.weather_timer.timeout.connect(self.update_weather)
+        self.weather_timer.start(3600000)  # 1 hour
+        self.update_weather()
+
+        self.item_timer = QTimer(self)
+        self.item_timer.timeout.connect(self.update_all_items)
+        self.item_timer.start(900000)  # 15 minutes
+        self.update_all_items()
 
     def update_time(self):
-        """Slot to update the label with the current time."""
-        # Day of Week = Monday is 0, Sunday is 6
-        days_of_week = ["Monday","Tuesday","Wednesday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-        day_of_week = date.today().weekday()
-        # Month
-        months_of_year = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-        month = date.today().month
-        day_of_month = date.today().day
-        year = str(date.today().year)
-        if 11 <= (day_of_month % 100) <= 13:
-            suffix = 'th'
-        else:
-            # Dictionary lookup with 'th' as default for other cases
-            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(day_of_month % 10, 'th')
+        now = QDateTime.currentDateTime()
+        day = now.date().day()
+        suffix = self.day_suffix(day)
+        formatted_time = f"{now.toString('dddd, MMMM')} {day}{suffix} {now.toString('yyyy hh:mm:ss ap')}"
+        self.clock_label.setText(formatted_time)
 
-        # Get the current date and time
-        current_time = datetime.now()
+    def update_weather(self):
+        # Fetch JSON
+        json_data = get_weather(
+            lat=lat,
+            lon=lon,
+            api_key=API_KEY,
+            exclude="alerts,hourly,minutely",
+            units="metric"
+        )
 
-        # Format the time string
-        # %I for hour (12-hour clock), %M for minute, %S for second, %p for AM/PM
-        formatted_time = current_time.strftime("%I:%M:%S %p")
-        time_string = f"{days_of_week[day_of_week]}, {months_of_year[month]} {day_of_month}{suffix} {year} {formatted_time}"
-        #print(time_string)
-        self.time_label.setText(f"{days_of_week[day_of_week]}, {months_of_year[month]} {day_of_month}{suffix} {year} {formatted_time}")
+        OpenWeather = OpenWeatherMapResponse.from_dict(json_data)
 
+        self.weather_label.setText(f"{str.title(OpenWeather.current.description)} / Now: {round(OpenWeather.current.temp_c())}°C / Low: {round(OpenWeather.daily[0].temp_min_c)}°C / High: {round(OpenWeather.daily[0].temp_max_c)}°C")
+    
+    def update_all_items(self):
+        self.appointments_label.setText("Friday, Feb 6th - Haircut with Jennifer 10:00 AM - 12:00 PM\r\nFriday, Feb 6th - Bingo 1:00 PM - 2:00 PM\r\nFriday, Feb 6th - Grocery Shopping 3:30 PM - 5:00 PM\r\nFriday, Feb 6th - Call with Louise 6:00 PM - 7:00 PM")
+        self.holidays_label.setText("Saturday,Feb 14th - Valentine's Day\r\nSunday, Feb 18th - Family Day")
+        schedule= "Friday, Feb  5 -  8am - Morning News - Ch  2\r\nFriday, Feb  5 - 10am - Antiques Roadshow - Ch 12\r\nFriday, Feb  5 - 12pm - Classic Movie Matinee: Casablanca - Ch  7\r\nFriday, Feb  5 -  2pm - Gardening Tips with Martha - Ch  9\r\nFriday, Feb  5 -  4pm - The Lawrence Welk Show - Ch  5\r\nFriday, Feb  5 -  6pm - Evening News - Ch  2\r\nFriday, Feb  5 -  8pm - Masterpiece Theatre: Downton Abbey - Ch 11"
+        self.tv_label.setText(schedule)  # Example placeholder
+        
+        self.message_label.setText("Have a wonderful day!\r\nDerrick and Louise are in Port Hardy - Returning Sunday")
 
+    def day_suffix(self, day):
+        if 11 <= day <= 13:
+            return "th"
+        return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
 
-def max_font_size(window:FullScreenWindow,label_text:str)->int:
-    current_font_size = 16
-    max_font_size = 200
-    window.time_label.setText(label_text)
-    window.time_label.adjustSize()
-    error_logging(True,"A",f"Window Width:{window.width()}")
-    error_logging(True,"A",window.time_label.width())
-    while current_font_size < max_font_size:
-        font = QFont("Arial", current_font_size) # You can also use other fonts like "Times New Roman"
-        window.time_label.setFont(font)
-        window.time_label.adjustSize()
-        error_logging(True,"A",window.time_label.width())
-        if window.time_label.width()>window.width():
-            current_font_size -=2
-            return current_font_size
-        current_font_size +=2
-    return 16
-
-def screen_layout(window:FullScreenWindow):
-    window.setWindowTitle("Daily Reminder")
-    window.time_label = QLabel("Current time will appear here...", window)
-
-def error_logging(logging_on:bool,WorA:str,text:str):
-    if logging_on:
-        hostname = socket.gethostname()
-        prefix = "/home/kevin/DailyReminder/logs/"
-        if hostname=="DESKTOP-D17IECP":
-            prefix = "C:\\Users\\Kevin\\Dropbox\\Python Projects\\Daily Reminders\\logs\\"
-        elif hostname=="Rpi10inch":
-            prefix = "/home/kevin/DailyReminder/logs/"
-        if WorA=="W":
-            with open(prefix+"logfile.txt", "w") as f:
-                f.write(str(text)+"\n")
-        else: 
-            with open(prefix+"logfile.txt", "a") as f:
-                f.write(str(text)+"\n")
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            QApplication.quit()
 
 def main():
-    app_logging = True
-    #error_logging(app_logging,"W","Started App")
-    #error_logging(app_logging,"A",socket.gethostname())
     app = QApplication(sys.argv)
-    window = FullScreenWindow()
-    window.hide()
-    window.resize(1280, 800)
-    screen_layout(window)
-    #error_logging(app_logging,"A","Calling Font Size")
-    font_size = max_font_size(window,"Thursday, February 10th 2026 12:08:49 AM")
-    #error_logging(app_logging,"A",f"Font Size:{font_size}")
-    #error_logging(app_logging,"A",f"Window Width:{window.width()}")
-    font = QFont("Arial", font_size)
-    window.time_label.setFont(font)
-
-    
-
-    window.show()
+    kiosk = KioskClock()
     sys.exit(app.exec())
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
