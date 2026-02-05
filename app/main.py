@@ -20,12 +20,12 @@ class FullScreenWindow(QMainWindow):
         self.showFullScreen()
         
         #CallbackTimerfor TIME
-        self.timer = QTimer(self)
+        self.time_timer = QTimer(self)
         # Connect the timer's timeout signal to the update_time slot
         self.timer.timeout.connect(self.update_time)
         # Set the interval in milliseconds (e.g., 1000ms = 1 second)
         self.interval = 1000
-        self.timer.start(self.interval)
+        self.time_timer.start(self.interval)
         
     def keyPressEvent(self, event):
         """Handle key press events to allow exiting full screen with Escape."""
@@ -100,17 +100,17 @@ def error_logging(logging_on:bool,WorA:str,text:str):
 
 def main():
     app_logging = True
-    error_logging(app_logging,"W","Started App")
-    error_logging(app_logging,"A",socket.gethostname())
+    #error_logging(app_logging,"W","Started App")
+    #error_logging(app_logging,"A",socket.gethostname())
     app = QApplication(sys.argv)
     window = FullScreenWindow()
     window.hide()
     window.resize(1280, 800)
     screen_layout(window)
-    error_logging(app_logging,"A","Calling Font Size")
+    #error_logging(app_logging,"A","Calling Font Size")
     font_size = max_font_size(window,"Thursday, February 10th 2026 12:08:49 AM")
-    error_logging(app_logging,"A",f"Font Size:{font_size}")
-    error_logging(app_logging,"A",f"Window Width:{window.width()}")
+    #error_logging(app_logging,"A",f"Font Size:{font_size}")
+    #error_logging(app_logging,"A",f"Window Width:{window.width()}")
     font = QFont("Arial", font_size)
     window.time_label.setFont(font)
 
